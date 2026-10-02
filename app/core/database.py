@@ -45,28 +45,7 @@ def init_db():
     import app.entidades.Usuario  # noqa: F401
 
     Base.metadata.create_all(bind=engine)
-    _migrar_contrasena_column()
     print("Tablas mapeadas")
-
-
-def _migrar_contrasena_column():
-    inspector = inspect(engine)
-    if "usuarios" not in inspector.get_table_names():
-        return
-    columna = next(
-        (c for c in inspector.get_columns("usuarios") if c["name"] == "contrasena"),
-        None,
-    )
-    if columna is None:
-        return
-    largo = getattr(columna["type"], "length", None)
-    if largo is not None and largo >= 255:
-        return
-    with engine.begin() as conexion:
-        conexion.execute(
-            text("ALTER TABLE usuarios ALTER COLUMN contrasena TYPE VARCHAR(255)")
-        )
-
 
 if __name__ == "__main__":
     init_db()

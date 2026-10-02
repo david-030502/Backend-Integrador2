@@ -1,4 +1,4 @@
-from pydantic import BaseModel, Field, ConfigDict
+from pydantic import BaseModel, ConfigDict
 from typing import List, Optional
 from datetime import datetime
 
@@ -23,7 +23,7 @@ class AlertasDTO(BaseModel):
     t:int
 
 class TelemetriaLoteEntradaDTO(BaseModel):
-    device_id: Optional[int] = Field(default=1, description="Camion 1")
+    device_id: str
     schema_version:int
     batch_id:int
     sent_at:int

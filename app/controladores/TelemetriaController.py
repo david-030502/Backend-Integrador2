@@ -17,12 +17,14 @@ def recibir_telemetria(datos: TelemetriaLoteEntradaDTO):
         lo valida mediante el DTO y lo manda a procesar al
         servicio
     """
-    if not servicio_dispositivos.obtener_byid(datos.device_id):
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Dispositivo no autorizado",
+    dispositivo = servicio_dispositivos.obtener_dispositivo_bymac(datos.device_id)
+    if not dispositivo:
+        dispositivo = servicio_dispositivos.registrar_dispositivo_bymac(
+            datos.device_id
         )
-    respuesta = servicio.procesar_lote_telemetria(datos)
+
+    print("Payload recibido:", datos.model_dump_json())
+    respuesta = servicio.procesar_lote_telemetria(datos, dispositivo.id_dispositivo)
     return respuesta
 
 @router.get("/")

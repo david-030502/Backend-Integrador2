@@ -9,12 +9,11 @@ class TelemetriaService:
         self.telemetria_repositorio = TelemetriaRepositorio()
         self.alerta_repositorio = AlertaRepositorio()
 
-    def procesar_lote_telemetria(self, lote:TelemetriaLoteEntradaDTO):
+    def procesar_lote_telemetria(self, lote:TelemetriaLoteEntradaDTO, id_dispositivo:int):
         temperatura = 0.0
         humedad = 0.0
         gases = 0.0
 
-        #Datos de la lista de sensores
         for lectura in lote.readings:
             if lectura.sensor == "dht22_temp":
                 temperatura = lectura.v
@@ -23,7 +22,6 @@ class TelemetriaService:
             elif lectura.sensor == "mq135_raw":
                 gases = lectura.v
 
-        #Coordenadas gps       
         latitud = 0.0
         longitud = 0.0
         if lote.gps:
@@ -31,35 +29,81 @@ class TelemetriaService:
             latitud = ultima_coordenada.lat
             longitud = ultima_coordenada.lon
 
-        #Modelo para insertar en bd
         entidad_telemetria = Telemetria(
             temperatura = temperatura,
             humedad = humedad,
             gases = gases,
             latitud = latitud,
             longitud = longitud,
-            id_dispositivo = lote.device_id,
+            id_dispositivo = id_dispositivo,
         )
 
         #Guardar en bd
         telemetria_guardado = self.telemetria_repositorio.guardar(entidad_telemetria)
 
-        #Configuración de alertas
-        tipo_alerta = None
-        alerta_guardada = None
-        if temperatura > 32.0:
-            tipo_alerta = f"Alerta: Calor crítico ({temperatura}°C)"
-        elif temperatura < 12.0:
-            tipo_alerta = f"Alerta: Temperatura baja ({temperatura}°C)"
-        elif gases > 300:
-            tipo_alerta = f"Concentracion alta de gases ({gases} ppm)"
+        alertas_guardadas = []
+        if lote.alerts:
+            for alerta in lote.alerts:
+                # Cambiar el formato a gusto, yo considero que es lo que deberia ponerse en la bd, tiene todos los campos
+                # que el esp32 envia como procesador de alertas.
+                # El frontend utiliza tipo_alerta para mostrarlo como mensaje descriptivo, cosa que rompe este esquema.
+                # Evalua crear otro campo descripcion en telemetria para enviar al front.
+                # Te dejo un ejemplo basico, por si lo quieres implementar.
+                """
+                    descripcion: str = "Error desconocido"
+                    switch(alerta.sensor):
+                        case "dht_22_temp":
+                            if alerta.type == "temp_low": 
+                                descripcion = "Temperatura crítica alta."
+                            else:
+                                descripcion = "Temperatura crítica baja."
+                        case "dht_22_hum":
+                            if alerta.type == "hum_low":
+                                descripcion = "Humedad crítica baja."
+                            else:
+                                descripcion = "Humedad crítica alta."
+                        case "mq135_raw":
+                            if alerta.type == "gas_high":
+                                descripcion = "Concentración de gases crítica"
+                        case "esp_now":
+                            descripcion = "No hay comunicacion de los sensores."
+                            
+                       / ... /     
+                    alerta.descripcion = descripcion
+                    alertas_guardaras.append(self.alerta_repositorio.guardar(...))       
+                """
+                tipo_alerta = (
+                    f"{alerta.type}: {alerta.sensor} "
+                    f"(valor={alerta.value}, umbral={alerta.threshold})"
+                )
+                alertas_guardadas.append(
+                    self.alerta_repositorio.guardar(
+                        Alerta(
+                            tipo_alerta=tipo_alerta,
+                            id_lectura=telemetria_guardado.id_lectura,
+                        )
+                    )
+                )
+        # Mantengo el bloque manual de generacion de alertas comentando, si se necesita en un futuro o como ejemplo.
 
-        if tipo_alerta:
-            nueva_alerta = Alerta(
-                tipo_alerta = tipo_alerta,
-                id_lectura = telemetria_guardado.id_lectura,
-            )
-            alerta_guardada = self.alerta_repositorio.guardar(nueva_alerta)
+        # else:
+        #     tipo_alerta = None
+        #     if temperatura > 32.0:
+        #         tipo_alerta = f"Alerta: Calor crítico ({temperatura}°C)"
+        #     elif temperatura < 12.0:
+        #         tipo_alerta = f"Alerta: Temperatura baja ({temperatura}°C)"
+        #     elif gases > 300:
+        #         tipo_alerta = f"Concentracion alta de gases ({gases} ppm)"
+        #
+        #     if tipo_alerta:
+        #         alertas_guardadas.append(
+        #             self.alerta_repositorio.guardar(
+        #                 Alerta(
+        #                     tipo_alerta=tipo_alerta,
+        #                     id_lectura=telemetria_guardado.id_lectura,
+        #                 )
+        #             )
+        #         )
 
         return{
             "mensaje":"Lote procesado exitosamente",
@@ -68,10 +112,23 @@ class TelemetriaService:
             "fecha_registro":telemetria_guardado.fecha_hora,
             "alerta_generada":{
                 "id_alerta":(
-                    alerta_guardada.id_alerta if alerta_guardada else None
+                    alertas_guardadas[0].id_alerta
+                    if alertas_guardadas
+                    else None
                 ),
-                "tipo":tipo_alerta,
+                "tipo":(
+                    alertas_guardadas[0].tipo_alerta
+                    if alertas_guardadas
+                    else None
+                ),
             },  
+            "alertas_generadas":[
+                {
+                    "id_alerta":alerta.id_alerta,
+                    "tipo":alerta.tipo_alerta,
+                }
+                for alerta in alertas_guardadas
+            ],
         }
 
     def obtener_ultimas_lecturas (self, limite: int=10):

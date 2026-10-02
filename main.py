@@ -24,10 +24,14 @@ app.add_middleware(
     CORSMiddleware,
     allow_origins=["http://localhost:5173",
                    "http://127.0.0.1:5173",
+                   "https://www.losandes.smashiv.com",
+                   "https://losandes.smashiv.com",
+                   "https://smashiv.com",
+                   "https://www.smashiv.com",
                    # TODO: agregar aca despues la ip del servidor.
                    ],
     allow_credentials=False,
-    allow_methods=["GET", "POST", "PUT", "DELETE"],
+    allow_methods=["GET", "POST", "PUT", "PATCH", "DELETE"],
     allow_headers=["Content-Type", "Authorization"],
 )
 

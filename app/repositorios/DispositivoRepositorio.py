@@ -22,6 +22,23 @@ class DispositivoRepositorio:
         with obtener_sesion() as sesion:
             return sesion.get(Dispositivo, id_dispositivo)
 
+    def actualizar(self, id_dispositivo, cambios):
+        with obtener_sesion() as sesion:
+            dispositivo = sesion.get(Dispositivo, id_dispositivo)
+            if not dispositivo:
+                return None
+            for campo, valor in cambios.items():
+                setattr(dispositivo, campo, valor)
+            sesion.flush()
+            return dispositivo
+
+    def obtener_bymac(self, mac):
+        with obtener_sesion() as sesion:
+            resultado = sesion.execute(
+                select(Dispositivo).where(Dispositivo.mac == mac)
+            )
+            return resultado.scalar_one_or_none()
+
     def listar_dispositivos(self):
         with obtener_sesion() as sesion:
             resultado = sesion.execute(select(Dispositivo))
