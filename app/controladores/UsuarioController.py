@@ -19,7 +19,12 @@ servicio = UsuarioService()
     status_code=status.HTTP_201_CREATED,
     summary="Registrar un nuevo usuario",
 )
-def registrar_usuario(datos:UsuarioCrearDTO):
+def registrar_usuario(datos:UsuarioCrearDTO, usuario_actual:dict=Depends(obtener_usuario_actual),):
+    if usuario_actual["rol"].lower() != "admin":
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Solo el administrador puede registrar usuarios",
+        )
     try:
         usuario = servicio.registrar_usuario(datos)
         return usuario

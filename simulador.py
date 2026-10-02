@@ -25,10 +25,10 @@ RUTA_GPS = [
 
 def simular_telemetria():
     print("=" * 65)
-    print("🚀 SIMULADOR IoT INICIADO - MONITOREO AVÍCOLA LOS ANDES")
-    print(f"📡 Endpoint: {URL_API}")
-    print(f"🚛 Unidad ID: {ID_DISPOSITIVO}")
-    print(f"⏱️ Frecuencia: Cada {INTERVALO_ENVIO} segundos")
+    print("SIMULADOR IoT INICIADO - MONITOREO AVÍCOLA LOS ANDES")
+    print(f"Endpoint: {URL_API}")
+    print(f"Unidad ID: {ID_DISPOSITIVO}")
+    print(f"Frecuencia: Cada {INTERVALO_ENVIO} segundos")
     print("=" * 65)
 
     temp_base = 22.0
@@ -75,15 +75,15 @@ def simular_telemetria():
 
             if respuesta.status_code in (200, 201):
                 hora_str = time.strftime("%H:%M:%S")
-                print(f"[{hora_str}] ✅ Batch #{batch_id} | Temp: {temperatura}°C | Hum: {humedad}% | Gases: {gases} ppm | Lat: {lat:.4f}, Lon: {lon:.4f}")
+                print(f"[{hora_str}] Batch #{batch_id} | Temp: {temperatura}°C | Hum: {humedad}% | Gases: {gases} ppm | Lat: {lat:.4f}, Lon: {lon:.4f}")
                 batch_id += 1
             else:
-                print(f"⚠️ Error {respuesta.status_code}: {respuesta.text}")
+                print(f"Error {respuesta.status_code}: {respuesta.text}")
 
         except requests.exceptions.ConnectionError:
-            print("❌ No se pudo conectar con FastAPI.")
+            print("No se pudo conectar con FastAPI.")
         except Exception as e:
-            print(f"❌ Error: {e}")
+            print(f"Error: {e}")
 
         time.sleep(INTERVALO_ENVIO)
 
