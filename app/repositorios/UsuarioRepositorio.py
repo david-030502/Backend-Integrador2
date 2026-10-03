@@ -45,6 +45,18 @@ class UsuarioRepositorio:
                 )
             )
 
+    def actualizar_usuario(self, id_usuario, nombre, email, contrasena, rol):
+        with obtener_sesion() as sesion:
+            usuario = sesion.get(Usuario, id_usuario)
+            if not usuario:
+                return False
+            usuario.nombre = nombre
+            usuario.email = email
+            usuario.rol = rol
+            if contrasena is not None:
+                usuario.contrasena = contrasena
+            return True
+
     def obtener_byid(self, id_usuario):
         with obtener_sesion() as sesion:
             return sesion.get(Usuario, id_usuario)

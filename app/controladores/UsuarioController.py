@@ -5,6 +5,7 @@ from app.dto.UsuarioDTO import (
     UsuarioRespuestaDTO,
     LoginDTO,
     LoginRespuestaDTO,
+    UsuarioActualizarDTO,
 )
 from app.servicios.UsuarioService import UsuarioService
 from app.core.seguridad import crear_token_acceso
@@ -52,6 +53,30 @@ def eliminar_usuario(id_usuario:int, usuario_actual:dict=Depends(obtener_usuario
             detail=f"Usuario con ID {id_usuario} no encontrado" 
         )
 
+@router.put(
+        "/{id_usuario}",
+        summary="Actualizar usuario",
+)
+def actualizar_usuario(id_usuario:int, datos:UsuarioActualizarDTO, usuario_actual:dict=Depends(obtener_usuario_actual),):
+    if usuario_actual["rol"].lower() != "admin":
+        raise HTTPException(
+            status_code = status.HTTP_403_FORBIDDEN,
+            detail="Solo el administrador puede actualizar usuarios",
+        )
+    try:
+        servicio.actualizar_usuario(id_usuario, datos)
+        return {
+            "mensaje":"Usuario actualizado correctamente",
+            "id_usuario" : id_usuario,
+        }
+    except ValueError as error:
+        raise HTTPException(
+            status_code = status.HTTP_400_BAD_REQUEST,
+            detail=str(error),
+        )
+
+
+
 @router.post(
     "/login",
     response_model=LoginRespuestaDTO,
@@ -91,7 +116,12 @@ def obtener_usuario(
     response_model=UsuarioRespuestaDTO,
     summary="Buscar usuario por ID",
 )
-def buscar_byid(id_usuario, _ : dict = Depends(obtener_usuario_actual)):
+def buscar_byid(id_usuario, usuario_actual : dict = Depends(obtener_usuario_actual)):
+    if usuario_actual["rol"].lower() != "admin":
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail = "Solo el administrador puede buscar otros usuarios",
+        )
     usuario = servicio.obtener_byid(id_usuario)
     if not usuario:
         raise HTTPException(
@@ -105,7 +135,12 @@ def buscar_byid(id_usuario, _ : dict = Depends(obtener_usuario_actual)):
     response_model=List[UsuarioRespuestaDTO],
     summary= f"Obtiene todos los usuarios de la base de datos",
 )
-def listar_usuarios(_: dict = Depends(obtener_usuario_actual)):
+def listar_usuarios(usuario_actual: dict = Depends(obtener_usuario_actual)):
+    if usuario_actual["rol"].lower() != "admin":
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail = "Solo el administrador puede buscar otros usuarios",
+            )
     usuarios = servicio.listar_usuarios()
     if not usuarios:
         raise HTTPException(

@@ -3,7 +3,7 @@ import hmac
 from pwdlib.exceptions import PwdlibError
 from datetime import datetime, timedelta, timezone
 from app.core.seguridad import password_hash
-from app.dto.UsuarioDTO import UsuarioCrearDTO
+from app.dto.UsuarioDTO import UsuarioCrearDTO, UsuarioActualizarDTO
 from app.entidades.Usuario import Usuario
 from app.repositorios.UsuarioRepositorio import UsuarioRepositorio
 
@@ -29,6 +29,36 @@ class UsuarioService:
             rol = datos.rol,
         )
         return self.repositorio.guardar(entidad)
+
+    def actualizar_usuario(self, id_usuario, datos:UsuarioActualizarDTO):
+        usuario = self.repositorio.obtener_byid(id_usuario)
+        if not usuario:
+            raise ValueError(f"Usuario con id {id_usuario} no encontrado")
+
+        #Validar correo
+        usuario_existente = self.repositorio.obtener_byemail(datos.email)
+        if usuario_existente and usuario_existente.id_usuario != id_usuario:
+            raise ValueError(
+                f"El correo '{datos.email}' ya se encuentra registrado"
+            )
+
+        #Actualizar datos
+        usuario.nombre = datos.nombre
+        usuario.email = datos.email
+        usuario.rol = datos.rol
+
+        #Actualizar contraseña
+        if datos.contrasena:
+            if not any(c.isalpha() for c in datos.contrasena) or not any(c.isdigit() for c in datos.contrasena):
+                raise ValueError("La contraseña debe tener letras y numeros")
+            usuario.contrasena = password_hash.hash(datos.contrasena)
+        return self.repositorio.actualizar_usuario(
+            id_usuario,
+            usuario.nombre,
+            usuario.email,
+            usuario.contrasena if datos.contrasena else None,
+            usuario.rol,
+        )
 
     def eliminar_usuario(self, id_usuario):
         return self.repositorio.eliminar(id_usuario)
@@ -91,3 +121,4 @@ class UsuarioService:
             "email":usuario.email,
             "rol":usuario.rol,
         }
+
