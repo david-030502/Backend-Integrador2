@@ -11,6 +11,14 @@ class UsuarioRepositorio:
             sesion.flush()
         return usuario
 
+    def eliminar(self, id_usuario):
+        with obtener_sesion() as sesion:
+            usuario = sesion.get(Usuario, id_usuario)
+            if not usuario:
+                return False
+            sesion.delete(usuario)
+            return True
+        
     def obtener_byemail(self, email):
         with obtener_sesion() as sesion:
             resultado = sesion.execute(
@@ -24,6 +32,17 @@ class UsuarioRepositorio:
                 update(Usuario)
                 .where(Usuario.id_usuario == id_usuario)
                 .values(contrasena=contrasena)
+            )
+
+    def actualizar_intentos_login(self, id_usuario, intentos_fallidos, bloqueado_hasta,):
+        with obtener_sesion() as sesion:
+            sesion.execute(
+                update(Usuario)
+                .where(Usuario.id_usuario == id_usuario)
+                .values(
+                    intentos_fallidos = intentos_fallidos,
+                    bloqueado_hasta = bloqueado_hasta,
+                )
             )
 
     def obtener_byid(self, id_usuario):

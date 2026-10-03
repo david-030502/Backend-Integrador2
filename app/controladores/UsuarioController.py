@@ -34,6 +34,24 @@ def registrar_usuario(datos:UsuarioCrearDTO, usuario_actual:dict=Depends(obtener
             detail=str(error),
         )
 
+@router.delete(
+        "/{id_usuario}",
+        status_code=status.HTTP_204_NO_CONTENT,
+        summary="Eliminar usuario",
+)
+def eliminar_usuario(id_usuario:int, usuario_actual:dict=Depends(obtener_usuario_actual),):
+    if usuario_actual["rol"].lower() != "admin":
+        raise HTTPException(
+            status_code = status.HTTP_403_FORBIDDEN,
+            detail="Solo el administrador puede eliminar usuarios",
+        )
+    eliminado = servicio.eliminar_usuario(id_usuario)
+    if not eliminado:
+        raise HTTPException(
+            status_code = status.HTTP_404_NOT_FOUND,
+            detail=f"Usuario con ID {id_usuario} no encontrado" 
+        )
+
 @router.post(
     "/login",
     response_model=LoginRespuestaDTO,
