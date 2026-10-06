@@ -1,5 +1,6 @@
 from typing import List
 from fastapi import APIRouter, HTTPException, status, Depends
+from sqlalchemy.exc import IntegrityError
 from app.dto.DispositivoDTO import (
     DispositivoActualizarDTO,
     DispositivoCrearDTO,
@@ -58,8 +59,13 @@ def obtener_byid(id_dispositivo, _: dict = Depends(obtener_usuario_actual)):
 def actualizar_dispositivo(
     id_dispositivo: int,
     datos: DispositivoActualizarDTO,
-    _: dict = Depends(obtener_usuario_actual),
+    usuario_actual: dict = Depends(obtener_usuario_actual),
 ):
+    if usuario_actual["rol"].lower() != "admin":
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Solo el administrador puede actualizar dispositivos",
+        )
     try:
         dispositivo = servicio.actualizar_dispositivo(id_dispositivo, datos)
     except ValueError as error:
@@ -73,3 +79,32 @@ def actualizar_dispositivo(
             detail=f"Dispositivo con ID {id_dispositivo} no encontrado",
         )
     return dispositivo
+
+@router.delete(
+    "/{id_dispositivo}",
+    status_code=status.HTTP_204_NO_CONTENT,
+    summary="Eliminar dispositivo",
+)
+def eliminar_dispositivo(
+    id_dispositivo: int,
+    usuario_actual: dict = Depends(obtener_usuario_actual),
+):
+    if usuario_actual["rol"].lower() != "admin":
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Solo el administrador puede eliminar dispositivos",
+        )
+
+    try:
+        servicio.eliminar_dispositivo(id_dispositivo)
+        return None
+    except ValueError as error:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=str(error),
+        )
+    except IntegrityError:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="No se puede eliminar el dispositivo porque tiene registros de telemetría asociados.",
+    )

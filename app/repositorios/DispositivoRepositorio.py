@@ -32,6 +32,14 @@ class DispositivoRepositorio:
             sesion.flush()
             return dispositivo
 
+    def eliminar(self, id_dispositivo):
+        with obtener_sesion() as sesion:
+            dispositivo = sesion.get(Dispositivo, id_dispositivo)
+            if not dispositivo:
+                return False
+            sesion.delete(dispositivo)
+            return True
+
     def obtener_bymac(self, mac):
         with obtener_sesion() as sesion:
             resultado = sesion.execute(
@@ -41,5 +49,7 @@ class DispositivoRepositorio:
 
     def listar_dispositivos(self):
         with obtener_sesion() as sesion:
-            resultado = sesion.execute(select(Dispositivo))
-            return resultado.scalars().all()
+            resultado = sesion.execute(
+                select(Dispositivo).order_by(Dispositivo.id_dispositivo)
+                )
+            return resultado.scalars().all()    

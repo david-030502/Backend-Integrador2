@@ -44,66 +44,46 @@ class TelemetriaService:
         alertas_guardadas = []
         if lote.alerts:
             for alerta in lote.alerts:
-                # Cambiar el formato a gusto, yo considero que es lo que deberia ponerse en la bd, tiene todos los campos
-                # que el esp32 envia como procesador de alertas.
-                # El frontend utiliza tipo_alerta para mostrarlo como mensaje descriptivo, cosa que rompe este esquema.
-                # Evalua crear otro campo descripcion en telemetria para enviar al front.
-                # Te dejo un ejemplo basico, por si lo quieres implementar.
-                """
-                    descripcion: str = "Error desconocido"
-                    switch(alerta.sensor):
-                        case "dht_22_temp":
-                            if alerta.type == "temp_low": 
-                                descripcion = "Temperatura crítica alta."
-                            else:
-                                descripcion = "Temperatura crítica baja."
-                        case "dht_22_hum":
-                            if alerta.type == "hum_low":
-                                descripcion = "Humedad crítica baja."
-                            else:
-                                descripcion = "Humedad crítica alta."
-                        case "mq135_raw":
-                            if alerta.type == "gas_high":
-                                descripcion = "Concentración de gases crítica"
-                        case "esp_now":
-                            descripcion = "No hay comunicacion de los sensores."
-                            
-                       / ... /     
-                    alerta.descripcion = descripcion
-                    alertas_guardaras.append(self.alerta_repositorio.guardar(...))       
-                """
-                tipo_alerta = (
-                    f"{alerta.type}: {alerta.sensor} "
-                    f"(valor={alerta.value}, umbral={alerta.threshold})"
-                )
+                tipo_alerta = alerta.type
+                if alerta.type == "temp_low":
+                    descripcion = (
+                        f"Temperatura crítica baja "
+                        f"(Valor={alerta.value}, umbral={alerta.threshold})"
+                    )
+                elif alerta.type == "temp_high":
+                    descripcion = (
+                        f"Temperatura crítica alta "
+                        f"(Valor={alerta.value}, umbral={alerta.threshold})"
+                    )
+                elif alerta.type == "hum_low":
+                    descripcion = (
+                        f"Humedad crítica baja "
+                        f"(Valor={alerta.value}, umbral={alerta.threshold})"
+                    )
+                elif alerta.type == "hum_high":
+                    descripcion = (
+                        f"Humedad crítica alta "
+                        f"(Valor={alerta.value}, umbral={alerta.threshold})"
+                    )
+                elif alerta.type == "gas_high":
+                    descripcion = (
+                        f"Concentración de gases crítica "
+                        f"(Valor={alerta.value}, umbral={alerta.threshold})"
+                    )
+                else:
+                    descripcion = (
+                        f"Alerta detectada en {alerta.sensor}"
+                        f"(valor={alerta.value}, umbral={alerta.threshold})"
+                    )
                 alertas_guardadas.append(
                     self.alerta_repositorio.guardar(
                         Alerta(
-                            tipo_alerta=tipo_alerta,
-                            id_lectura=telemetria_guardado.id_lectura,
+                            tipo_alerta = tipo_alerta,
+                            descripcion = descripcion,
+                            id_lectura = telemetria_guardado.id_lectura,
                         )
                     )
                 )
-        # Mantengo el bloque manual de generacion de alertas comentando, si se necesita en un futuro o como ejemplo.
-
-        # else:
-        #     tipo_alerta = None
-        #     if temperatura > 32.0:
-        #         tipo_alerta = f"Alerta: Calor crítico ({temperatura}°C)"
-        #     elif temperatura < 12.0:
-        #         tipo_alerta = f"Alerta: Temperatura baja ({temperatura}°C)"
-        #     elif gases > 300:
-        #         tipo_alerta = f"Concentracion alta de gases ({gases} ppm)"
-        #
-        #     if tipo_alerta:
-        #         alertas_guardadas.append(
-        #             self.alerta_repositorio.guardar(
-        #                 Alerta(
-        #                     tipo_alerta=tipo_alerta,
-        #                     id_lectura=telemetria_guardado.id_lectura,
-        #                 )
-        #             )
-        #         )
 
         return{
             "mensaje":"Lote procesado exitosamente",

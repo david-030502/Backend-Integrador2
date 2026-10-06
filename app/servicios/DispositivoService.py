@@ -47,6 +47,14 @@ class DispositivoService:
 
         return self.repositorio.actualizar(id_dispositivo, cambios)
 
+    def eliminar_dispositivo(self, id_dispositivo):
+        dispositivo = self.repositorio.obtener_byid(id_dispositivo)
+        if not dispositivo:
+            raise ValueError(
+                f"Dispositivo con ID {id_dispositivo} no encontrado"
+            )
+        return self.repositorio.eliminar(id_dispositivo)
+
     def obtener_dispositivo_bymac(self, mac: str):
         mac_limpio = mac.strip()
         return self.repositorio.obtener_bymac(mac_limpio)

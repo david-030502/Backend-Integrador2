@@ -19,3 +19,6 @@ class Alerta(Base):
     id_usuario: Mapped[Optional[int]] = mapped_column(
         ForeignKey("usuarios.id_usuario"), nullable=True
     )
+    descripcion: Mapped[Optional[str]] = mapped_column(
+        String(255), nullable=True
+    )
