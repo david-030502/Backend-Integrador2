@@ -10,9 +10,9 @@ class TelemetriaService:
         self.alerta_repositorio = AlertaRepositorio()
 
     def procesar_lote_telemetria(self, lote:TelemetriaLoteEntradaDTO, id_dispositivo:int):
-        temperatura = 0.0
-        humedad = 0.0
-        gases = 0.0
+        temperatura = None
+        humedad = None
+        gases = None
 
         for lectura in lote.readings:
             if lectura.sensor == "dht22_temp":

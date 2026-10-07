@@ -1,6 +1,6 @@
 from typing import List
 from fastapi import APIRouter, HTTPException, status, Depends
-from app.dto.AlertaDTO import AlertaRespuestaDTO
+from app.dto.AlertaDTO import AlertaRespuestaDTO, AlertasPaginadasDTO
 from app.servicios.AlertaService import AlertaService
 
 from app.core.auth import obtener_usuario_actual
@@ -8,20 +8,25 @@ from app.core.auth import obtener_usuario_actual
 router = APIRouter(prefix="/alertas", tags=["Alertas"])
 servicio = AlertaService()
 
-@router.get("/", response_model=List[AlertaRespuestaDTO])
-def listar_alertas(limite:int=10, _: dict = Depends(obtener_usuario_actual)):
-    """
-        Endpoint para que el front obtenga las alertas registradas
-        validadas con el DTO de respuesta
-    """
-    if limite < 0 :
-        # TODO: Decidir despues si para este caso emitir una excepcion o solo ignorar. Por ahora se ignora.
-        # raise HTTPException(
-        #    status_code=status.HTTP_400_BAD_REQUEST,
-        #    detail=f"No existe un limite negativo"
-        #)
+@router.get("/", response_model=AlertasPaginadasDTO)
+def listar_alertas(pagina: int = 1, limite: int = 10, _: dict = Depends(obtener_usuario_actual)):
+    if pagina < 1:
+        pagina = 1
+
+    if limite < 1:
         limite = 10
-    return servicio.listar_alertas_recientes(limite)
+
+    alertas, total = servicio.listar_alertas_recientes(pagina, limite)
+
+    total_paginas = (total + limite - 1) // limite
+
+    return {
+        "alertas": alertas,
+        "pagina": pagina,
+        "limite": limite,
+        "total": total,
+        "total_paginas": total_paginas
+    }
 
 @router.put(
     "/{id_alerta}/atender",

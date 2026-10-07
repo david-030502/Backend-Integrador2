@@ -1,5 +1,5 @@
 from datetime import datetime
-from typing import Optional
+from typing import Optional, List
 from pydantic import BaseModel, ConfigDict
 
 class AlertaRespuestaDTO(BaseModel):
@@ -10,8 +10,17 @@ class AlertaRespuestaDTO(BaseModel):
     fecha_vista:Optional[datetime]=None
     id_lectura:int
     id_usuario:Optional[int]=None
+    id_dispositivo: int
+    placa: str
 
     model_config = ConfigDict(from_attributes=True)
+    
+class AlertasPaginadasDTO(BaseModel):
+    alertas: List[AlertaRespuestaDTO]
+    pagina: int
+    limite: int
+    total: int
+    total_paginas: int
 
 class AtenderAlertaDTO(BaseModel):
     id_usuario:int
