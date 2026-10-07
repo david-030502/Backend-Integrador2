@@ -1,4 +1,4 @@
-from pydantic import BaseModel, ConfigDict
+from pydantic import BaseModel, ConfigDict, Field
 from typing import List, Optional
 from datetime import datetime
 
@@ -27,6 +27,8 @@ class TelemetriaLoteEntradaDTO(BaseModel):
     schema_version:int
     batch_id:int
     sent_at:int
+    nonce: int = Field(ge=0, le=4294967295)
+    signature: str = Field(min_length=64, max_length=64)
     readings:List[LecturaSensorDTO]
     gps:List[CoordenadasDTO]
     alerts:Optional[List[AlertasDTO]] = []
