@@ -1,6 +1,6 @@
 from datetime import datetime
 
-from sqlalchemy import select
+from sqlalchemy import select, func
 
 from app.core.database import obtener_sesion
 from app.entidades.Alerta import Alerta
@@ -17,7 +17,6 @@ class AlertaRepositorio:
 
     def obtener_alertas_recientes(self, pagina=1, limite=10):
         with obtener_sesion() as sesion:
-
             offset = (pagina - 1) * limite
 
             resultado = sesion.execute(
@@ -43,10 +42,10 @@ class AlertaRepositorio:
                 alertas.append(alerta)
 
             total = sesion.execute(
-                select(Alerta)
-            ).scalars().all()
+                select(func.count()).select_from(Alerta)
+            ).scalar_one()
 
-            return alertas, len(total)
+            return alertas, total
 
     def atender_alerta(self, id_alerta, id_usuario):
         with obtener_sesion() as sesion:

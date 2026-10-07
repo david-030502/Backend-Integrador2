@@ -36,11 +36,11 @@ class TelemetriaLoteEntradaDTO(BaseModel):
 class TelemetriaRespuestaDTO(BaseModel):
     id_lectura:int
     id_dispositivo:int
-    temperatura:float
-    humedad:float
-    gases:float
-    latitud:float
-    longitud:float
+    temperatura:float | None
+    humedad:float | None
+    gases:float | None
+    latitud:float | None
+    longitud:float | None
     fecha_hora:datetime
 
     model_config = ConfigDict(from_attributes=True)

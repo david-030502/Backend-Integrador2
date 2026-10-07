@@ -15,6 +15,6 @@ class Telemetria(Base):
     temperatura: Mapped[float | None] = mapped_column(Numeric(5, 2), nullable=True)
     humedad: Mapped[float | None] = mapped_column(Numeric(5, 2), nullable=True)
     gases: Mapped[float | None] = mapped_column(Numeric(7, 2), nullable=True)
-    latitud: Mapped[float] = mapped_column(Numeric(10, 7))
-    longitud: Mapped[float] = mapped_column(Numeric(10, 7))
+    latitud: Mapped[float | None] = mapped_column(Numeric(10, 7), nullable=True)
+    longitud: Mapped[float | None] = mapped_column(Numeric(10, 7), nullable=True)
     id_dispositivo: Mapped[int] = mapped_column(ForeignKey("dispositivos.id_dispositivo"))

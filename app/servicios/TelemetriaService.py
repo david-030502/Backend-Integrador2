@@ -22,8 +22,8 @@ class TelemetriaService:
             elif lectura.sensor == "mq135_raw":
                 gases = lectura.v
 
-        latitud = 0.0
-        longitud = 0.0
+        latitud = None
+        longitud = None
         if lote.gps:
             ultima_coordenada = lote.gps[-1]
             latitud = ultima_coordenada.lat

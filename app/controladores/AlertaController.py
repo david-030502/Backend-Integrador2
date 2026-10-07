@@ -16,6 +16,9 @@ def listar_alertas(pagina: int = 1, limite: int = 10, _: dict = Depends(obtener_
     if limite < 1:
         limite = 10
 
+    elif limite > 50:
+        limite = 50
+
     alertas, total = servicio.listar_alertas_recientes(pagina, limite)
 
     total_paginas = (total + limite - 1) // limite

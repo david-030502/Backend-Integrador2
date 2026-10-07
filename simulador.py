@@ -161,11 +161,16 @@ def simular_telemetria():
             # ==========================================
             # ENVIAR AL BACKEND
             # ==========================================
+            inicio_envio = time.time()
+
             respuesta = requests.post(
                 URL_API,
                 json=payload,
                 timeout=5
             )
+
+            fin_envio = time.time()
+            tiempo_backend = fin_envio - inicio_envio
 
             if respuesta.status_code in (200, 201):
 
@@ -177,7 +182,8 @@ def simular_telemetria():
                     f"Temp: {temperatura}°C | "
                     f"Hum: {humedad}% | "
                     f"Gases: {gases} ppm | "
-                    f"Alertas: {len(alerts)}"
+                    f"Alertas: {len(alerts)} | "
+                    f"Respuesta API: {tiempo_backend:.3f}s"
                 )
 
                 if alerts:
