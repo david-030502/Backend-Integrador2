@@ -1,6 +1,11 @@
 import time
 import random
+import hashlib
+import hmac
+import secrets
 import requests
+
+from app.core.config import configuracion_hmac
 
 # ==========================================
 # CONFIGURACIÓN DEL SIMULADOR
@@ -103,6 +108,7 @@ def simular_telemetria():
                 "schema_version": 1,
                 "batch_id": batch_id,
                 "sent_at": timestamp_actual,
+                "nonce": secrets.randbits(32),
 
                 "readings": [
                     {
@@ -135,6 +141,22 @@ def simular_telemetria():
 
                 "alerts": alerts
             }
+
+            firma_canonica = "|".join(
+                (
+                    payload["device_id"],
+                    str(payload["nonce"]),
+                    str(timestamp_actual),
+                    str(int(temperatura * 10)),
+                    str(int(humedad * 10)),
+                    str(int(gases)),
+                )
+            )
+            payload["signature"] = hmac.new(
+                configuracion_hmac.secret.encode("utf-8"),
+                firma_canonica.encode("utf-8"),
+                hashlib.sha256,
+            ).hexdigest()
 
             # ==========================================
             # ENVIAR AL BACKEND

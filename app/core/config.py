@@ -29,5 +29,19 @@ class JwtSettings(BaseSettings):
         return valor
 
 
+class HmacSettings(BaseSettings):
+    secret: str = Field(validation_alias="SENAVI_HMAC_SECRET")
+
+    model_config = SettingsConfigDict(env_file=".env", extra="ignore")
+
+    @field_validator("secret")
+    @classmethod
+    def validar_secret(cls, valor: str) -> str:
+        if not valor or not valor.strip():
+            raise ValueError("SENAVI_HMAC_SECRET no puede estar vacío")
+        return valor
+
+
 settings = Settings()
 jwt_settings = JwtSettings()
+configuracion_hmac = HmacSettings()

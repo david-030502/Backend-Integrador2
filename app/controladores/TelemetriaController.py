@@ -5,6 +5,7 @@ from app.dto.TelemetriaDTO import TelemetriaLoteEntradaDTO, TelemetriaRespuestaD
 from app.servicios.TelemetriaService import TelemetriaService
 from app.servicios.DispositivoService import DispositivoService
 from app.core.auth import obtener_usuario_actual
+from app.core.telemetria_auth import reservar_nonce, verificar_firma
 
 router = APIRouter(prefix="/telemetria", tags = ["Telemetria"])
 servicio = TelemetriaService()
@@ -17,6 +18,25 @@ def recibir_telemetria(datos: TelemetriaLoteEntradaDTO):
         lo valida mediante el DTO y lo manda a procesar al
         servicio
     """
+    try:
+        firma_valida = verificar_firma(datos)
+    except ValueError as error:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail=str(error),
+        ) from error
+
+    if not firma_valida:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="signature invalida",
+        )
+    if not reservar_nonce(datos):
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="nonce repetido (posible replay)",
+        )
+
     dispositivo = servicio_dispositivos.obtener_dispositivo_bymac(datos.device_id)
     if not dispositivo:
         dispositivo = servicio_dispositivos.registrar_dispositivo_bymac(
