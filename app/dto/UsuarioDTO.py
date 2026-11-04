@@ -1,4 +1,4 @@
-from typing import Optional, Literal
+from typing import Literal
 from pydantic import BaseModel, ConfigDict, EmailStr, Field
 
 class UsuarioCrearDTO(BaseModel):

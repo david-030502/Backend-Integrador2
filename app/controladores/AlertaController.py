@@ -1,4 +1,3 @@
-from typing import List
 from fastapi import APIRouter, HTTPException, status, Depends
 from app.dto.AlertaDTO import AlertaRespuestaDTO, AlertasPaginadasDTO
 from app.servicios.AlertaService import AlertaService

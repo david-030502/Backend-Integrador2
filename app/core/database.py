@@ -1,6 +1,6 @@
 from contextlib import contextmanager
 
-from sqlalchemy import URL, create_engine, inspect, text
+from sqlalchemy import URL, create_engine
 from sqlalchemy.orm import DeclarativeBase, sessionmaker
 
 from app.core.config import settings
