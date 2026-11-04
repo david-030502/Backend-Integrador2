@@ -133,7 +133,7 @@ def buscar_byid(id_usuario, usuario_actual : dict = Depends(obtener_usuario_actu
 @router.get(
     "/",
     response_model=List[UsuarioRespuestaDTO],
-    summary= f"Obtiene todos los usuarios de la base de datos",
+    summary= "Obtiene todos los usuarios de la base de datos",
 )
 def listar_usuarios(usuario_actual: dict = Depends(obtener_usuario_actual)):
     if usuario_actual["rol"].lower() != "admin":
@@ -145,6 +145,6 @@ def listar_usuarios(usuario_actual: dict = Depends(obtener_usuario_actual)):
     if not usuarios:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
-            detail=f"No se ha podido listar los usuarios"
+            detail="No se ha podido listar los usuarios"
         )
     return usuarios
