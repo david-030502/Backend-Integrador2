@@ -12,7 +12,7 @@ def obtener_usuario_actual(
     if not credenciales:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Usuario no autenticado",
+            detail="Usuario no ha sido autenticado",
         )
     datos = verificar_token(credenciales.credentials)
     if not datos:
